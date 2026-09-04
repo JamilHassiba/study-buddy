@@ -1,0 +1,48 @@
+from typing import Annotated
+
+from app.database import get_db
+from app.schemas import DocumentOut
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from psycopg2.extensions import connection
+from psycopg2.extras import RealDictCursor
+
+router = APIRouter()
+
+DbConn = Annotated[connection, Depends(get_db)]
+
+
+@router.post("/documents")
+def post_document(document: UploadFile, conn: DbConn) -> DocumentOut:
+    if document.content_type != "application/pdf":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{document.content_type}'. Only PDF files are accepted.",
+        )
+
+    file_bytes = document.file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        query = """
+            INSERT INTO documents (file_name)
+            VALUES (%s)
+            RETURNING document_id, file_name, upload_date;
+        """
+        data = (document.filename,)
+
+        cursor.execute(query, data)
+        row = cursor.fetchone()
+
+        if row is None:
+            raise HTTPException(
+                status_code=500, detail="Could not save document. Please try again."
+            )
+
+        try:
+            pass
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    conn.commit()
+    return DocumentOut(**row)
