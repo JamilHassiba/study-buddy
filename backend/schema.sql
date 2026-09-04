@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS documents (
 CREATE TABLE IF NOT EXISTS chunks (
     chunk_id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,
-    embedding VECTOR(1536) NOT NULL,
+    embedding VECTOR(1024) NOT NULL,
     document_id INT NOT NULL REFERENCES documents(document_id) ON DELETE CASCADE,
     index INT NOT NULL
 );
