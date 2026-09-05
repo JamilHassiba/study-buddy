@@ -9,16 +9,13 @@ def retrieve_chunks(
 ) -> list[RealDictRow]:
 
     query = """
-        SELECT 
-            content, 
-            index, 
-            embedding <=> %s::vector AS distance
+        SELECT content, index
         FROM chunks 
         WHERE document_id = %s 
-        ORDER BY distance 
+        ORDER BY embedding <=> %s::vector 
         LIMIT %s;
     """
-    data = (query_embedding, document_id, limit)
+    data = (document_id, query_embedding, limit)
 
     cursor.execute(query, data)
     return cursor.fetchall()
