@@ -2,6 +2,7 @@ from typing import Annotated
 
 from app.database import get_db
 from app.schemas import DocumentOut
+from app.services.ingestion import ingest_document
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from psycopg2.extensions import connection
 from psycopg2.extras import RealDictCursor
@@ -40,7 +41,7 @@ def post_document(document: UploadFile, conn: DbConn) -> DocumentOut:
             )
 
         try:
-            pass
+            ingest_document(cursor, row["document_id"], file_bytes)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 

@@ -1,3 +1,4 @@
+from pgvector.psycopg2 import register_vector
 from psycopg2 import pool
 
 from .config import settings
@@ -10,6 +11,7 @@ connection_pool = pool.ThreadedConnectionPool(
 def get_db():
     conn = connection_pool.getconn()
     try:
+        register_vector(conn)
         yield conn
     except Exception:
         conn.rollback()

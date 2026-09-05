@@ -1,5 +1,7 @@
 from io import BytesIO
 
+from app.services.embeddings import embed_chunks
+from psycopg2.extras import execute_values
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
@@ -38,3 +40,20 @@ def chunk_text(text: str, chunk_size: int = 250, overlap: int = 50) -> list[str]
             break
 
     return chunks
+
+
+def ingest_document(cursor, document_id: int, file_bytes: bytes) -> None:
+    text = extract_text(file_bytes)
+    chunks = chunk_text(text)
+    embeddings = embed_chunks(chunks)
+
+    query = """
+        INSERT INTO chunks (content, embedding, document_id, index)
+        VALUES %s
+    """
+
+    rows = []
+    for i in range(len(embeddings)):
+        rows.append((chunks[i], embeddings[i], document_id, i))
+
+    execute_values(cursor, query, rows)
