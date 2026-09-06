@@ -1,37 +1,17 @@
 import { useState } from "react";
-import { sendChatMessage } from "../api/chat";
-import type { ChatMessage } from "../types/chat";
 
-type ChatInputProps = {
-  documentId: number | null;
-  addMessage: (message: ChatMessage) => void;
+type MessageInputProps = {
+  onSubmit: (text: string) => void;
 };
 
-function MessageInput({ documentId, addMessage }: ChatInputProps) {
+function MessageInput({ onSubmit }: MessageInputProps) {
   const [inputText, setInputText] = useState("");
 
-  async function handleSubmit() {
-    if (!inputText) return;
-    if (documentId == null) return;
-
-    const currentInput = inputText;
+  function handleSubmit() {
+    if (!inputText.trim()) return;
+    const text = inputText;
     setInputText("");
-
-    addMessage({
-      sender: "user",
-      text: currentInput,
-    });
-
-    const chatResponse = await sendChatMessage({
-      document_id: documentId,
-      query: currentInput,
-    });
-
-    addMessage({
-      sender: "llm",
-      text: chatResponse.answer,
-      sources: chatResponse.sources,
-    });
+    onSubmit(text);
   }
 
   return (

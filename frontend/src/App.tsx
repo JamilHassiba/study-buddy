@@ -33,7 +33,7 @@ function App() {
         onSelect={setDocumentId}
       />
       <DocumentViewer documentId={documentId} />
-      <ChatPanel documentId={documentId} />
+      <ChatPanel key={documentId ?? "none"} documentId={documentId} />
     </>
   );
 }
