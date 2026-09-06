@@ -10,9 +10,7 @@ import ChatPanel from "./components/ChatPanel";
 function App() {
   const [documents, setDocuments] = useState<DocumentOut[]>([]);
   const [documentId, setDocumentId] = useState<number | null>(null);
-
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     listDocuments()
@@ -24,16 +22,16 @@ function App() {
 
   async function onUpload(file: File) {
     setIsUploading(true);
-    setUploadError(null);
 
     try {
       const documentOut = await uploadDocument(file);
       setDocumentId(documentOut.document_id);
       setDocuments((currentDocs) => [documentOut, ...currentDocs]);
-      setIsUploading(false);
     } catch (e) {
-      setUploadError(e instanceof Error ? e.message : "Upload failed.");
-      alert(uploadError);
+      const message = e instanceof Error ? e.message : "Upload failed.";
+      alert(message);
+    } finally {
+      setIsUploading(false);
     }
   }
 
@@ -44,6 +42,7 @@ function App() {
         selectedId={documentId}
         onUpload={onUpload}
         onSelect={setDocumentId}
+        isUploading={isUploading}
       />
       <DocumentViewer documentId={documentId} />
       <ChatPanel key={documentId ?? "none"} documentId={documentId} />

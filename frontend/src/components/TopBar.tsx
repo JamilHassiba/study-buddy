@@ -1,13 +1,21 @@
 import type { DocumentOut } from "../types/api";
+import loadingGif from "../assets/loading-spinner.gif";
 
 type TopBarProps = {
   documents: DocumentOut[];
   selectedId: number | null;
   onUpload: (file: File) => void;
   onSelect: (documentId: number) => void;
+  isUploading: boolean;
 };
 
-function TopBar({ documents, selectedId, onUpload, onSelect }: TopBarProps) {
+function TopBar({
+  documents,
+  selectedId,
+  onUpload,
+  onSelect,
+  isUploading,
+}: TopBarProps) {
   return (
     <>
       <p>Study Buddy</p>
@@ -27,12 +35,20 @@ function TopBar({ documents, selectedId, onUpload, onSelect }: TopBarProps) {
         ))}
       </select>
 
+      {isUploading && (
+        <div>
+          <img src={loadingGif} alt="" /> <span>Uploading PDF</span>
+        </div>
+      )}
+
       <input
         type="file"
         accept="application/pdf"
+        disabled={isUploading}
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) onUpload(file);
+          e.target.value = "";
         }}
       />
     </>
