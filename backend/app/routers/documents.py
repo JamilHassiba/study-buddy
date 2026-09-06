@@ -3,7 +3,7 @@ from typing import Annotated
 from app.database import get_db
 from app.schemas import DocumentOut
 from app.services.ingestion import ingest_document
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 from psycopg2 import Binary
 from psycopg2.extensions import connection
 from psycopg2.extras import RealDictCursor
@@ -55,3 +55,33 @@ def post_document(document: UploadFile, conn: DbConn) -> DocumentOut:
 
     conn.commit()
     return DocumentOut(**row)
+
+
+@router.get("/documents/{document_id}/file")
+def get_file_bytes(document_id: int, conn: DbConn) -> Response:
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        cursor.execute(
+            "SELECT file_bytes FROM documents WHERE document_id = %s;", (document_id,)
+        )
+
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(
+                status_code=404, detail=f"Could not find document with id {document_id}"
+            )
+
+        return Response(
+            content=bytes(row["file_bytes"]),
+            media_type="application/pdf",
+            headers={"Content-Disposition": "inline"},
+        )
+
+
+@router.get("/documents")
+def get_documents(conn: DbConn) -> list[DocumentOut]:
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        cursor.execute(
+            "SELECT document_id, file_name, upload_date FROM documents ORDER BY upload_date DESC;"
+        )
+        rows = cursor.fetchall()
+        return [DocumentOut(**row) for row in rows]
