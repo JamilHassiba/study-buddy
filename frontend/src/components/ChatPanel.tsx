@@ -26,17 +26,25 @@ function ChatPanel({ documentId }: ChatPanelProps) {
     });
     setIsLoading(true);
 
-    const chatResponse = await sendChatMessage({
-      document_id: documentId,
-      query: text,
-    });
+    try {
+      const chatResponse = await sendChatMessage({
+        document_id: documentId,
+        query: text,
+      });
 
-    setIsLoading(false);
-    addMessage({
-      sender: "llm",
-      text: chatResponse.answer,
-      sources: chatResponse.sources,
-    });
+      addMessage({
+        sender: "llm",
+        text: chatResponse.answer,
+        sources: chatResponse.sources,
+      });
+    } catch (e) {
+      addMessage({
+        sender: "llm",
+        text: e instanceof Error ? e.message : "Something went wrong.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

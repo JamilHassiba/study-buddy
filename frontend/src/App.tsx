@@ -11,17 +11,30 @@ function App() {
   const [documents, setDocuments] = useState<DocumentOut[]>([]);
   const [documentId, setDocumentId] = useState<number | null>(null);
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   useEffect(() => {
     listDocuments()
       .then(setDocuments)
-      .catch((e) => console.error("Failed to load documents:", e));
+      .catch((e) =>
+        alert(e instanceof Error ? e.message : "Could not load documents."),
+      );
   }, []);
 
   async function onUpload(file: File) {
-    const documentOut = await uploadDocument(file);
-    setDocumentId(documentOut.document_id);
+    setIsUploading(true);
+    setUploadError(null);
 
-    setDocuments((currentDocs) => [documentOut, ...currentDocs]);
+    try {
+      const documentOut = await uploadDocument(file);
+      setDocumentId(documentOut.document_id);
+      setDocuments((currentDocs) => [documentOut, ...currentDocs]);
+      setIsUploading(false);
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : "Upload failed.");
+      alert(uploadError);
+    }
   }
 
   return (
