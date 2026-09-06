@@ -41,6 +41,7 @@ function ChatPanel({ documentId }: ChatPanelProps) {
 
   return (
     <>
+      <MessageList messages={messages} isLoading={isLoading} />
       <MessageInput onSubmit={handleInputSubmit} />
     </>
   );
