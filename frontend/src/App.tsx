@@ -5,6 +5,7 @@ import TopBar from "./components/TopBar";
 import type { DocumentOut } from "./types/api";
 import { uploadDocument } from "./api/documents";
 import { listDocuments } from "./api/documents";
+import ChatPanel from "./components/ChatPanel";
 
 function App() {
   const [documents, setDocuments] = useState<DocumentOut[]>([]);
@@ -23,19 +24,16 @@ function App() {
     setDocuments((currentDocs) => [documentOut, ...currentDocs]);
   }
 
-  function onSelect(documentId: number): void {
-    setDocumentId(documentId);
-  }
-
   return (
     <>
       <TopBar
         documents={documents}
         selectedId={documentId}
         onUpload={onUpload}
-        onSelect={onSelect}
+        onSelect={setDocumentId}
       />
       <DocumentViewer documentId={documentId} />
+      <ChatPanel documentId={documentId} />
     </>
   );
 }
